@@ -9,10 +9,10 @@ def get_data():
     try:
         with open('./mac.txt', 'r', encoding='utf-8') as f:
             data = f.read()
-    except FileNotFoundError:
+    except FileNotFoundError:  # Loads it from url if not on machine
         macbeth = requests.get(url).text
         with open('./macbeth.txt', 'w', encoding='utf-8') as f:
-            f.write('need to remove to the macbeth')
+            f.write('need to remove to the macbeth')  ####
             f.write(str(macbeth))
         data = macbeth
     return data
@@ -42,11 +42,8 @@ def get_dict_of_names(macbeth):
             # There were a couple outliers that had long names of text
             # This removes that
             if len(name) < 20:
-                try:
-                    dict_of_names[name]  # checking if the name is in the dictionary yet
+                if name in dict_of_names:
                     for word in spoken.split(' '):
-                        
-                        
                         word = word.replace('\n', ' ')
                         puncs = [',', ':', ';', '!', '.', '?', '(', ')']
                         for i in puncs:
@@ -59,8 +56,8 @@ def get_dict_of_names(macbeth):
                                 dict_of_names[name][word] += 1
                             except KeyError:
                                 dict_of_names[name][word] = 1
-                except KeyError:
-                    # Creates the empty dictionary to the name if line 49 has a key error
+                else:
+                    # Creates the empty dictionary to the name
                     dict_of_names[name] = {}
         except ValueError:
             pass
@@ -73,6 +70,7 @@ def get_dict_of_names(macbeth):
 def get_df(macbeth):
     macbeth = macbeth.replace('\n', ' ')
     for i in range(5):
+        # replaces all groups of spaces with single
         macbeth = macbeth.replace('  ', ' ')
     macbeth_l = macbeth.split(' ')
     macbeth_d = {}
@@ -90,6 +88,9 @@ def plot_top_words(macbeth):
     df = df.set_index('word')
     df = df.sort_values(by='count')
     df.tail(25).plot(kind='barh')
+    plt.title('Top 25 Words from Macbeth')
+    plt.ylabel('Word')
+    plt.xlabel('Number of Occurences')
     plt.show()
 
 def plot_mentions(df):
@@ -120,12 +121,7 @@ def build_df(macbeth):
     df = clean(pd.DataFrame.from_dict(dict_of_names))
     return df
 
-#read_data(macbeth)
-#plot_mentions(df)
-if __name__ == "__main__":
-    pd.set_option("display.max_rows", None, "display.max_columns", None)
-    df = build_df(get_data())
-    
+def plot_words_by_character(df):
     fig = plt.figure()
     fig.subplots_adjust(hspace=0.8, wspace=0.8)
     for n, col in enumerate(df.columns):
@@ -133,6 +129,19 @@ if __name__ == "__main__":
         df[col].sort_values(ascending=False)[:5].plot(kind='barh', ax=ax)
         ax.set_title(col)
     plt.show()
+
+
+if __name__ == "__main__":
+    pd.set_option("display.max_rows", None, "display.max_columns", None)
+    macbeth = get_data()
+    df = build_df(macbeth)
+    "Uncomment to run one of the below"
+    #read_data(macbeth)
+    #plot_top_words(macbeth)
+    #plot_mentions(df)
+    #plot_words_by_character(df)
+    
+    
     
     
     
